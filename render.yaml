@@ -1,9 +1,3 @@
-services:
-  - type: web
-    name: openscroll
-    env: python
-    plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      flask db upgrade  # Run migrations during deploy
-    startCommand: gunicorn app:create_app()  # Ensure factory pattern is followed
+buildCommand: |
+  pip install -r requirements.txt
+  flask db upgrade  # This runs the migrations
