@@ -1,20 +1,24 @@
-from flask import Flask,render_template,session,abort,request,redirect,url_for
+from flask import Flask, render_template, session, abort, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate  # For handling migrations
 import requests
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+migrate = Migrate()  # Initialize Flask-Migrate
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] ='4f9d3a6a9e5b1c2b3d7a8f6c4d9e5a1b'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+    app.config['SECRET_KEY'] = '4f9d3a6a9e5b1c2b3d7a8f6c4d9e5a1b'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'  # Match render.yaml
 
+    # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
+    migrate.init_app(app, db)  # Link Flask-Migrate with the app
 
-    from app.models import User  # Now safe after db initialization
+    from app.models import User  # Import models after db init
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -30,11 +34,11 @@ def create_app():
     @app.route('/')
     def welcome():
         return render_template('welcome.html')
-    acc_key='030902'
+
+    acc_key = '030902'
 
     @app.route('/users', methods=['GET', 'POST'])
     def list_users():
-        # Check if user is already authenticated
         if session.get('authenticated'):
             users = User.query.all()
             return render_template('users.html', users=users)
@@ -42,7 +46,7 @@ def create_app():
         if request.method == 'POST':
             entered_key = request.form.get('access_key')
             if entered_key == acc_key:
-                session['authenticated'] = True  # Set session as authenticated
+                session['authenticated'] = True
                 return redirect(url_for('list_users'))
             else:
                 return render_template('key_prompt.html', error="Invalid Key")
@@ -53,5 +57,5 @@ def create_app():
     def logout():
         session.pop('authenticated', None)
         return redirect(url_for('list_users'))
-    return app
 
+    return app
