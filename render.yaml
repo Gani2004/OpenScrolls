@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: openscroll
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      flask db upgrade  # Apply database migrations
+    startCommand: gunicorn app:app  # Replace 'app:app' with 'yourfilename:app' if different
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:///openscroll.db  # Replace with PostgreSQL URL if using PostgreSQL
+      - key: SECRET_KEY
+        value: your-secret-key  # Replace with your Flask secret key
+
+databases:
+  - name: openscroll-db
+    plan: free
